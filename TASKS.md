@@ -24,4 +24,4 @@ Everything must be committed to git. If you create a new file, immediately `git 
 - Test on: wordpress-test.kayorama.nl
 
 ## Done ✅
-- (None yet)
+- **P1-1: Core License Manager** (2026-04-10) — Full WordPress plugin with license key validation, API secret management, admin settings page, admin notices, weekly cron validation, AJAX validation endpoint, activation/deactivation hooks, and license status display card.
