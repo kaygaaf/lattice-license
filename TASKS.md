@@ -25,6 +25,13 @@ Everything must be committed to git. If you create a new file, immediately `git 
 
 ## PROPOSED FEATURES
 
+### Lattice License: License Analytics Dashboard + MRR Tracking
+**Plugin:** Lattice License Manager
+**Problem:** Plugin issues and validates license keys but has no analytics showing license usage patterns, revenue from licenses, or customer health. Store owner can't see: which license tiers are selling, geographic distribution of licensees, churn (expired vs active), or MRR from license subscriptions.
+**Solution:** Add a "License Analytics" tab to the admin dashboard. Show: (1) Active vs Expired vs Revoked license count with trend indicators, (2) MRR calculation based on license tier prices × active licenses, (3) Licenses by tier (Basic/Pro/Enterprise) as a donut chart, (4) New licenses this month vs last month, (5) Geographic distribution of licensees (from IP or manual country field), (6) License upgrade rate (% of Basic users who upgraded to Pro). Export revenue data to CSV for financial reconciliation.
+**Impact:** Revenue visibility for license-based businesses. MRR tracking is essential SaaS/license business metric. Helps identify churn risk (large number of expiring licenses approaching).
+**Effort:** Low–Medium
+
 ### Lattice License: Usage-Based Licensing & Metering
 **Plugin:** Lattice License Manager
 **Problem:** SaaS products charging per-usage need meter billing. Current plugin only handles flat license keys, not metered consumption (API calls, users, storage).
