@@ -270,6 +270,13 @@ class Lattice_License_Manager {
             ];
         }
 
+        // Check transient cache (12h TTL)
+        $cache_key = 'lattice_license_status_' . md5($this->license_key . $this->site_url);
+        $cached = get_transient($cache_key);
+        if ($cached !== false) {
+            return $cached;
+        }
+
         $response = wp_remote_post(LATTICE_LICENSE_API_URL . '/validate', [
             'body' => [
                 'license_key' => $this->license_key,
@@ -284,26 +291,29 @@ class Lattice_License_Manager {
 
         if (is_wp_error($response)) {
             // If API is unreachable, allow the plugin to work (fail open)
-            // But cache this status
-            return [
+            $result = [
                 'valid' => true,
                 'message' => 'Unable to reach license server (allowing operation)',
                 'message_type' => 'warning'
             ];
+            set_transient($cache_key, $result, 1 * HOUR_IN_SECONDS);
+            return $result;
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if (!$body || !isset($body['valid'])) {
-            return [
+            $result = [
                 'valid' => false,
                 'message' => 'Invalid response from license server',
                 'message_type' => 'error'
             ];
+            set_transient($cache_key, $result, 1 * HOUR_IN_SECONDS);
+            return $result;
         }
 
         if ($body['valid']) {
-            return [
+            $result = [
                 'valid' => true,
                 'message' => 'Your license is active and valid',
                 'message_type' => 'success',
@@ -313,12 +323,16 @@ class Lattice_License_Manager {
                 'sites_used' => $body['license']['sites_used'] ?? 0,
                 'valid_until' => $body['license']['valid_until'] ?? null
             ];
+            set_transient($cache_key, $result, 12 * HOUR_IN_SECONDS);
+            return $result;
         } else {
-            return [
+            $result = [
                 'valid' => false,
                 'message' => $body['error'] ?? 'License validation failed',
                 'message_type' => 'error'
             ];
+            set_transient($cache_key, $result, 1 * HOUR_IN_SECONDS);
+            return $result;
         }
     }
 
@@ -326,6 +340,10 @@ class Lattice_License_Manager {
         if (empty($this->license_key) || empty($this->api_secret)) {
             return ['valid' => false, 'message' => 'License key or API secret missing'];
         }
+
+        // Clear cache so we get a fresh check
+        $cache_key = 'lattice_license_status_' . md5($this->license_key . $this->site_url);
+        delete_transient($cache_key);
 
         $response = wp_remote_post(LATTICE_LICENSE_API_URL . '/validate', [
             'body' => [
@@ -355,6 +373,10 @@ class Lattice_License_Manager {
     }
 
     public function check_license() {
+        // Clear cache so cron always checks fresh
+        $cache_key = 'lattice_license_status_' . md5($this->license_key . $this->site_url);
+        delete_transient($cache_key);
+
         $status = $this->get_license_status();
         update_option('lattice_license_last_check', current_time('mysql'));
 
